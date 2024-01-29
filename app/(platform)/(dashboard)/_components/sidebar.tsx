@@ -45,7 +45,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   if (!(orgLoaded || listLoaded) || userMemberships.isLoading) {
     return (
       <>
-        <Skeleton />
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-8 w-[50%]" />
+          <Skeleton className="h-8 w-10" />
+        </div>
+        <div className="space-y-2">
+          <SideBarItem.Skeleton />
+          <SideBarItem.Skeleton />
+          <SideBarItem.Skeleton />
+        </div>
       </>
     );
   }

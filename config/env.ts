@@ -11,6 +11,7 @@ const EnvSchema = object({
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: string({
     required_error: 'Missing NEXT_PUBLIC_CLERK_SIGN_UP_URL',
   }),
+  DATABASE_URL: string({ required_error: 'Missing DATABASE_URL' }),
 });
 
 export type ParsedEnv = TypeOf<typeof EnvSchema>;
