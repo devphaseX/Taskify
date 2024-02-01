@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1706510205134,
+      "tag": "0000_green_ted_forrester",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706511807321,
+      "tag": "0001_odd_blink",
+      "breakpoints": true
+    }
+  ]
+}
