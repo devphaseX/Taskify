@@ -1,30 +1,20 @@
-import { createBoardAction } from '@/actions/board';
-import { Button } from '@/components/ui/button';
 import { board } from '@/lib/schema';
 import { db } from '@/lib/schema/db';
-import { Board } from './board';
-import { CreateBoardForm } from './_components/create-board-form';
+import { Info } from './_components/info';
+import { Separator } from '@/components/ui/separator';
+import { BoardList } from './_components/board-list';
 
 export const dynamic = 'force-dynamic';
 
 const OrganizationPage = async () => {
-  const create = async (form: FormData) => {
-    'use server';
-    const title = form.get('title');
-    if (title) {
-      createBoardAction({ title: title as string });
-    }
-  };
-
   const boards = await db.select().from(board);
 
   return (
-    <div className="flex flex-col space-y-4">
-      <CreateBoardForm />
-      <div className="space-y-2">
-        {boards.map((board) => (
-          <Board key={board.id} {...board} />
-        ))}
+    <div className="w-full mb-20">
+      <Info />
+      <Separator className="my-4" />
+      <div className="px-2 md:px-4">
+        <BoardList />
       </div>
     </div>
   );
