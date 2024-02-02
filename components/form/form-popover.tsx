@@ -27,13 +27,12 @@ export const FormPopOver = ({
 }: FormPopOverProps) => {
   const [opened, setOpened] = useState(false);
   const router = useRouter();
-  const { orgId } = useParams() as { orgId: string };
   const { execute, result, reset } = useAction(createBoardAction, {
     onSuccess: ({ message, data }) => {
       reset();
       toast.success(message);
       setOpened(false);
-      router.push(`/organization/${orgId}/board/${data.id}`);
+      router.push(`/board/${data.id}`);
     },
     onError: ({ serverError }) => {
       toast.error(serverError);

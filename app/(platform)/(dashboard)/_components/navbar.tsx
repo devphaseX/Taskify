@@ -7,7 +7,7 @@ import { FormPopOver } from '@/components/form/form-popover';
 
 const Navbar = () => {
   return (
-    <nav className="sticky z-50 top-0 w-full h-14 border-b shadow-sm bg-inherit flex items-center px-4">
+    <nav className="fixed z-50 top-0 w-full h-14 border-b shadow-sm bg-white flex items-center px-4">
       <MobileSidebar />
       <div className="flex items-center gap-x-4">
         <div className="hidden md:flex">
@@ -22,13 +22,15 @@ const Navbar = () => {
             Create
           </Button>
         </FormPopOver>
-        <Button
-          size="sm"
-          variant="primary"
-          className="rounded-sm block md:hidden"
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
+        <FormPopOver>
+          <Button
+            size="sm"
+            variant="primary"
+            className="rounded-sm block md:hidden"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </FormPopOver>
       </div>
       <div className="ml-auto flex items-center gap-x-2">
         <OrganizationSwitcher
