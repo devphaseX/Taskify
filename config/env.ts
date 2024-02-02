@@ -12,6 +12,9 @@ const EnvSchema = object({
     required_error: 'Missing NEXT_PUBLIC_CLERK_SIGN_UP_URL',
   }),
   DATABASE_URL: string({ required_error: 'Missing DATABASE_URL' }),
+  NEXT_PUBLIC_UNSPLASH_API_KEY: string({
+    required_error: 'NEXT_PUBLIC_UNSPLASH_API_KEY is missing',
+  }),
 });
 
 export type ParsedEnv = TypeOf<typeof EnvSchema>;

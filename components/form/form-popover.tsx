@@ -9,6 +9,8 @@ import { useCallback, useState } from 'react';
 import { Button } from '../ui/button';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { FormPicker } from './form-picker';
+import { useParams, useRouter } from 'next/navigation';
 
 type FormPopOverProps = {
   children: React.ReactNode;
@@ -24,9 +26,14 @@ export const FormPopOver = ({
   sideOffset = 0,
 }: FormPopOverProps) => {
   const [opened, setOpened] = useState(false);
-  const { execute, result } = useAction(createBoardAction, {
-    onSuccess: () => {
-      toast.success('Board created');
+  const router = useRouter();
+  const { orgId } = useParams() as { orgId: string };
+  const { execute, result, reset } = useAction(createBoardAction, {
+    onSuccess: ({ message, data }) => {
+      reset();
+      toast.success(message);
+      setOpened(false);
+      router.push(`/organization/${orgId}/board/${data.id}`);
     },
     onError: ({ serverError }) => {
       toast.error(serverError);
@@ -34,8 +41,9 @@ export const FormPopOver = ({
   });
 
   const onSubmit = useCallback((form: FormData) => {
-    const payload = Object.fromEntries(form) as CreateBoardInput;
-    execute(payload);
+    const payload = Object.fromEntries(form) as unknown as CreateBoardInput;
+    console.log({ payload });
+    execute(payload as any);
   }, []);
 
   return (
@@ -61,6 +69,7 @@ export const FormPopOver = ({
         </Button>
         <form action={onSubmit}>
           <div className="space-y-4">
+            <FormPicker id="image" errors={result.validationError} />
             <FormInput
               id="title"
               label="Board title"

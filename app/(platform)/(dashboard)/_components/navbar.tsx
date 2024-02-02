@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
 import { OrganizationSwitcher, UserButton } from '@clerk/nextjs';
 import { MobileSidebar } from './mobile-sidebar';
+import { FormPopOver } from '@/components/form/form-popover';
 
 const Navbar = () => {
   return (
@@ -12,13 +13,15 @@ const Navbar = () => {
         <div className="hidden md:flex">
           <Logo />
         </div>
-        <Button
-          size="sm"
-          variant="primary"
-          className="rounded-sm hidden md:block h-auto py-1.5 px-2"
-        >
-          Create
-        </Button>
+        <FormPopOver align="start" sideOffset={18} side="bottom">
+          <Button
+            size="sm"
+            variant="primary"
+            className="rounded-sm hidden md:block h-auto py-1.5 px-2"
+          >
+            Create
+          </Button>
+        </FormPopOver>
         <Button
           size="sm"
           variant="primary"
