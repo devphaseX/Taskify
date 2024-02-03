@@ -1,10 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ListWithCards } from '@/types';
 import { ListForm } from './list-form';
 import { ListItem } from './list-item';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
+import { v4 as uuid } from 'uuid';
+import { useAction } from 'next-safe-action/hook';
+import { reorderListAction } from '@/actions/update-list-order';
+import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 type ListContainerProps = {
   data: Array<ListWithCards>;
@@ -19,12 +24,29 @@ function reorder<T>(list: T[], sourceIndex: number, targetIndex: number) {
   return updatedList;
 }
 
-export const ListContainer = ({ boardId, data }: ListContainerProps) => {
+export const ListContainer = ({ data }: ListContainerProps) => {
   const [boardList, setBoardList] = useState(data);
+  const router = useRouter();
+  const { boardId } = useParams() as { boardId: string };
 
-  useEffect(() => {
-    setBoardList(data);
-  }, [data]);
+  const actionUpdateId = useRef<string | null>(null);
+
+  const { execute: reorderList } = useAction(reorderListAction, {
+    onSuccess: (data, { updateId }) => {
+      if (updateId === actionUpdateId.current) {
+        setBoardList(data);
+        toast.success('List boarder reorder succesfully');
+      }
+    },
+    onError: () => {
+      setBoardList(data);
+      toast.success('List boarder reorder failed');
+    },
+
+    onSettled: () => {
+      router.refresh();
+    },
+  });
 
   const onDragEnd = ({ destination, source, type }: DropResult) => {
     if (
@@ -43,6 +65,9 @@ export const ListContainer = ({ boardId, data }: ListContainerProps) => {
         destination.index
       ).map((item, index) => ({ ...item, order: index + 1 }));
       setBoardList(reorderedList);
+      const updateId = uuid();
+      actionUpdateId.current = updateId;
+      reorderList({ boardId, items: reorderedList, updateId });
     }
 
     //user moves a card
