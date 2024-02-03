@@ -6,7 +6,7 @@ import {
 } from '@/lib/validations/params';
 import { auth } from '@clerk/nextjs';
 import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
-import { PgDialect, alias } from 'drizzle-orm/pg-core';
+import { alias } from 'drizzle-orm/pg-core';
 import { redirect } from 'next/navigation';
 import { ListContainer } from './_components/list-container';
 
