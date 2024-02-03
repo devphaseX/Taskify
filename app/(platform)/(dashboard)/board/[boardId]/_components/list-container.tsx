@@ -7,7 +7,10 @@ import { ListItem } from './list-item';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { v4 as uuid } from 'uuid';
 import { useAction } from 'next-safe-action/hook';
-import { reorderListAction } from '@/actions/update-list-order';
+import {
+  reorderCardAction,
+  reorderListAction,
+} from '@/actions/update-list-order';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -29,11 +32,32 @@ export const ListContainer = ({ data }: ListContainerProps) => {
   const router = useRouter();
   const { boardId } = useParams() as { boardId: string };
 
-  const actionUpdateId = useRef<string | null>(null);
-
   const { execute: reorderList } = useAction(reorderListAction, {
-    onSuccess: (data, { updateId }) => {
-      if (updateId === actionUpdateId.current) {
+    onSuccess: (data, input) => {
+      if (boardList === input.items) {
+        setBoardList(data);
+        toast.success('List boarder reorder succesfully');
+      }
+    },
+    onError: () => {
+      setBoardList(data);
+      toast.success('List boarder reorder failed');
+    },
+
+    onSettled: () => {
+      router.refresh();
+    },
+  });
+
+  const { execute: reorderCard } = useAction(reorderCardAction, {
+    onSuccess: (data, input) => {
+      if (
+        boardList.filter(
+          (list) =>
+            list === (input.sources as unknown as ListWithCards) ||
+            list === (input.destination as unknown as ListWithCards)
+        ).length === 2
+      ) {
         setBoardList(data);
         toast.success('List boarder reorder succesfully');
       }
@@ -66,7 +90,6 @@ export const ListContainer = ({ data }: ListContainerProps) => {
       ).map((item, index) => ({ ...item, order: index + 1 }));
       setBoardList(reorderedList);
       const updateId = uuid();
-      actionUpdateId.current = updateId;
       reorderList({ boardId, items: reorderedList, updateId });
     }
 
@@ -100,6 +123,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
         ).map((item, index) => ({ ...item, order: index + 1 }));
         sourceList.cards = reorderCards;
         setBoardList(newOrderedData);
+        reorderCard({ boardId, sources: reorderCards });
 
         //TODO trigger server action
       } else {
@@ -121,6 +145,12 @@ export const ListContainer = ({ data }: ListContainerProps) => {
           ...card,
           order: index + 1,
         }));
+
+        reorderCard({
+          boardId,
+          sources: sourceList.cards,
+          destination: destinationList.cards,
+        });
       }
     }
   };

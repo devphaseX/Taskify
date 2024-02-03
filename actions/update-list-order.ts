@@ -6,6 +6,8 @@ import { SelectResultFields, jsonAggBuildObject } from '@/lib/utils';
 import { auth } from '@clerk/nextjs';
 import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { revalidatePath } from 'next/cache';
+import { sources } from 'next/dist/compiled/webpack/webpack';
 import { array, number, object, string } from 'zod';
 
 const OrdereableItemSchema = object({
@@ -52,8 +54,105 @@ export const reorderListAction = serverAction(
         );
       });
 
-      console.log(items);
-      console.log('-------------------------------------');
+      const boardList = alias(list, 'board_list');
+      const boardCardList = alias(card, 'board_card_list');
+
+      const cardSelect = getTableColumns(boardCardList);
+      const lists = await db
+        .select({
+          ...getTableColumns(boardList),
+          cards: sql<Array<SelectResultFields<typeof cardSelect>>>`
+         (
+          With ${boardCardList} as  (
+            select * from ${card}
+            where ${card.listId} = ${boardList.id}
+            order by ${card.order} asc
+          )
+
+          select ${jsonAggBuildObject(
+            getTableColumns(boardCardList)
+          )} from ${boardCardList}
+         )
+    `,
+        })
+        .from(boardList)
+        .innerJoin(board, eq(boardList.boardId, board.id))
+        .where(
+          sql`
+     ${boardList.boardId} in (
+      select ${board.id} from ${board}
+      where ${board.id} = ${boardId} and ${board.orgId} = ${orgId}
+      )
+  `
+        )
+        .orderBy(asc(boardList.order));
+
+      return lists;
+    } catch (e) {
+      console.log(e);
+      throw new Error('Something went wrong while updating');
+    }
+  }
+);
+
+const ReorderCardItems = object({
+  sources: array(OrdereableItemSchema.extend({ listId: string().uuid() })),
+  destination: array(
+    OrdereableItemSchema.extend({ listId: string().uuid() })
+  ).optional(),
+  boardId: string().uuid(),
+});
+export const reorderCardAction = serverAction(
+  ReorderCardItems,
+  async ({ sources, destination, boardId }) => {
+    const { orgId, userId } = auth();
+
+    if (!userId) {
+      throw new Error('User not authenenicated');
+    }
+
+    if (!orgId) {
+      throw new Error('Board can only be created by organization');
+    }
+
+    try {
+      const [currentBoard] = await db
+        .select()
+        .from(board)
+        .where(sql`${board.id} = ${boardId} AND ${board.orgId} = ${orgId}`);
+
+      if (!currentBoard) throw new Error('Board not found');
+
+      await db.transaction(async () => {
+        const updateSourceCards = Promise.all(
+          sources.map((item) =>
+            db
+              .update(card)
+              .set({ order: item.order })
+              .where(
+                sql`${card.listId} = (
+                select ${list.id} from ${list}
+                where ${list.id} = ${item.id} and ${list.boardId} = ${boardId}
+              ) AND ${item.id} = ${card.id}`
+              )
+          )
+        );
+
+        const updateDestinationCards = Promise.all(
+          destination?.map((item) =>
+            db
+              .update(card)
+              .set({ order: item.order })
+              .where(
+                sql`${card.listId} = (
+              select ${list.id} from ${list}
+              where ${list.id} = ${item.id} and ${list.boardId} = ${boardId}
+            ) AND ${item.id} = ${card.id}`
+              )
+          ) ?? []
+        );
+        await Promise.all([updateSourceCards, updateDestinationCards]);
+      });
 
       const boardList = alias(list, 'board_list');
       const boardCardList = alias(card, 'board_card_list');
@@ -87,8 +186,7 @@ export const reorderListAction = serverAction(
   `
         )
         .orderBy(asc(boardList.order));
-      console.log(lists);
-
+      revalidatePath(`/board/${boardId}`);
       return lists;
     } catch (e) {
       console.log(e);
