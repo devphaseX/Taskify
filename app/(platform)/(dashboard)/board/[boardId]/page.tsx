@@ -5,8 +5,8 @@ import {
   BoardIdPageParamsSchema,
 } from '@/lib/validations/params';
 import { auth } from '@clerk/nextjs';
-import { asc, getTableColumns, sql } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
+import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
+import { PgDialect, alias } from 'drizzle-orm/pg-core';
 import { redirect } from 'next/navigation';
 import { ListContainer } from './_components/list-container';
 
@@ -28,18 +28,21 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
     .select({
       ...getTableColumns(boardList),
       cards: sql<Array<SelectResultFields<typeof cardSelect>>>`
-        (
-          select 
-          ${jsonAggBuildObject(cardSelect)} from 
-          (
+         (
+          With ${boardCardList} as  (
             select * from ${card}
             where ${card.listId} = ${boardList.id}
             order by ${card.order} asc
-          ) ${boardCardList}
-        )
+          )
+
+          select ${jsonAggBuildObject(
+            getTableColumns(boardCardList)
+          )} from ${boardCardList}
+         )
     `,
     })
     .from(boardList)
+    .innerJoin(board, eq(boardList.boardId, board.id))
     .where(
       sql`
      ${boardList.boardId} in (

@@ -11,8 +11,9 @@ import { ListOptions } from './list-options';
 
 type ListHeaderProps = {
   data: List;
+  onAddCard: () => void;
 };
-export const ListHeader = ({ data }: ListHeaderProps) => {
+export const ListHeader = ({ data, onAddCard }: ListHeaderProps) => {
   const [title, setTitle] = useState(data.title);
   const [editing, setEditing] = useState(false);
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -87,7 +88,7 @@ export const ListHeader = ({ data }: ListHeaderProps) => {
         </div>
       )}
 
-      <ListOptions data={data} onAddCard={() => {}} />
+      <ListOptions data={data} onAddCard={onAddCard} />
     </div>
   );
 };

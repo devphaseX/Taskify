@@ -39,11 +39,8 @@ export const FormPopOver = ({
     },
   });
 
-  console.log({ result });
-
   const onSubmit = useCallback((form: FormData) => {
     const payload = Object.fromEntries(form) as unknown as CreateBoardInput;
-    console.log({ payload });
     execute(payload as any);
   }, []);
 
