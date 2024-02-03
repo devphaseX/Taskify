@@ -6,11 +6,16 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FormSubmit } from '@/components/form/form-submit';
 import { Separator } from '@/components/ui/separator';
 import { useAction } from 'next-safe-action/hook';
-import { DeleteListInput, deleteListAction } from '@/actions/list';
+import {
+  DeleteListInput,
+  UpdateListInput,
+  copyListAction,
+  deleteListAction,
+} from '@/actions/list';
 import { toast } from 'sonner';
 type ListOptionsProps = {
   data: List;
@@ -19,15 +24,41 @@ type ListOptionsProps = {
 
 export const ListOptions = ({ data, onAddCard }: ListOptionsProps) => {
   const [opened, setOpened] = useState(false);
-  const { execute: deleteList } = useAction(deleteListAction, {
-    onSuccess: (data) => {
-      toast.success(`List "${data.title}" deleted`);
-    },
+  const { execute: deleteList, reset: resetDeleteList } = useAction(
+    deleteListAction,
+    {
+      onSuccess: (data) => {
+        toast.success(`List "${data.title}" deleted`);
+        setOpened(false);
+      },
 
-    onError: ({ serverError }) => {
-      toast.error(serverError);
-    },
-  });
+      onError: ({ serverError }) => {
+        toast.error(serverError);
+      },
+    }
+  );
+
+  const { execute: copyList, reset: resetCopyList } = useAction(
+    copyListAction,
+    {
+      onSuccess: (data) => {
+        toast.success(`List "${data.title}" copied`);
+        setOpened(false);
+      },
+
+      onError: ({ serverError }) => {
+        toast.error(serverError);
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!opened) {
+      resetCopyList();
+      resetDeleteList();
+    }
+  }, [opened]);
+
   return (
     <Popover open={opened} onOpenChange={setOpened}>
       <PopoverTrigger asChild>
@@ -55,7 +86,11 @@ export const ListOptions = ({ data, onAddCard }: ListOptionsProps) => {
         >
           Add Card...
         </Button>
-        <form>
+        <form
+          action={(formData) => {
+            copyList(Object.fromEntries(formData) as UpdateListInput);
+          }}
+        >
           <input hidden name="id" id="id" value={data.id} />
           <input hidden name="boardId" id="boardId" value={data.boardId} />
           <FormSubmit
