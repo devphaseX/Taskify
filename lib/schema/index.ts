@@ -1,5 +1,6 @@
 import {
   PgTable,
+  integer,
   json,
   pgTable,
   serial,
@@ -28,7 +29,7 @@ export type Board = typeof board.$inferSelect;
 const list = pgTable('list', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: varchar('title', { length: 256 }).notNull(),
-  order: serial('order').notNull(),
+  order: integer('order').notNull(),
   boardId: uuid('board_id')
     .references(() => board.id, { onDelete: 'cascade' })
     .notNull(),
@@ -44,7 +45,7 @@ export type List = typeof list.$inferSelect;
 const card = pgTable('card', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: varchar('title', { length: 256 }).notNull(),
-  order: serial('order').notNull(),
+  order: integer('order').notNull(),
   description: text('description'),
   listId: uuid('list_id')
     .references(() => list.id, { onDelete: 'cascade' })

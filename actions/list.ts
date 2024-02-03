@@ -4,12 +4,12 @@ import { serverAction } from '@/lib/action';
 import { board, card, list } from '@/lib/schema';
 import { auth } from '@clerk/nextjs';
 import { revalidatePath } from 'next/cache';
-import { TypeOf, object, string } from 'zod';
+import { TypeOf, number, object, string } from 'zod';
 import { db } from '@/lib/schema/db';
 
 import { createInsertSchema } from 'drizzle-zod';
 import { asc, getTableColumns, sql } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
+import { PgDialect, alias } from 'drizzle-orm/pg-core';
 import { SelectResultFields, jsonAggBuildObject } from '@/lib/utils';
 
 const CreateListSchema = createInsertSchema(list, {
@@ -17,6 +17,7 @@ const CreateListSchema = createInsertSchema(list, {
   title: string({ required_error: 'Title is required' }).min(3, {
     message: 'Title is too short',
   }),
+  order: number().optional(),
 });
 
 export type CreateListInput = TypeOf<typeof CreateListSchema>;
@@ -42,7 +43,17 @@ export const createListAction = serverAction(CreateListSchema, async (form) => {
 
     const [newList] = await db
       .insert(list)
-      .values({ ...form, boardId: currentBoard.id })
+      .values({
+        ...form,
+        boardId: currentBoard.id,
+        order: sql<number>`
+            coalesce(
+              (
+            select max(list.order)::integer + 1 from list
+            where list.board_id = ${sql.raw(`'${form.boardId}'`)}
+              ), 1)
+              `,
+      })
       .returning();
 
     revalidatePath(`/board/${form.boardId}`);
@@ -186,7 +197,7 @@ export const copyListAction = serverAction(
 
       if (!currentList) throw new Error('List not found');
 
-      const [copiedList] = await db.transaction(async (tx) => {
+      const newList = await db.transaction(async () => {
         const {
           id: _id,
           order: _order,
@@ -194,7 +205,18 @@ export const copyListAction = serverAction(
           updatedAt: _updatedAt,
           ...shareProps
         } = currentList;
-        const [newList] = await tx.insert(list).values(shareProps).returning();
+        const [newList] = await db
+          .insert(list)
+          .values({
+            ...shareProps,
+            title: `${shareProps.title} - Copy`,
+            order: sql<number>`
+            (
+            select max(list.order)::integer + 1 from list
+            where list.board_id = ${sql.raw(`'${boardId}'`)}
+            )`,
+          })
+          .returning();
 
         await Promise.all(
           currentList.cards.map(
@@ -208,32 +230,32 @@ export const copyListAction = serverAction(
           )
         );
 
-        return await db
-          .select({
-            ...getTableColumns(boardList),
-            cards: sql<Array<SelectResultFields<typeof cardSelect>>>`
-            (
-              select
-              ${jsonAggBuildObject(cardSelect)} from
-              (
-                select * from ${card}
-                where ${card.listId} = ${boardList.id}
-                order by ${card.order} asc
-              ) ${boardCardList}
-            )
-        `,
-          })
-          .from(boardList)
-          .where(
-            sql`${boardList.id} = ${newList.id} AND ${boardList.boardId}  = (
-            select ${board.id} from ${board}
-            where ${board.id} = ${boardId} AND ${board.orgId} = ${orgId}
-          )`
-          );
+        return newList;
       });
 
+      const [copiedList] = await db
+        .select({
+          ...getTableColumns(boardList),
+          cards: sql<Array<SelectResultFields<typeof cardSelect>>>`
+        (
+          select
+          ${jsonAggBuildObject(cardSelect)} from
+          (
+            select * from ${card}
+            where ${card.listId} = ${boardList.id}
+            order by ${card.order} asc
+          ) ${boardCardList}
+        )
+    `,
+        })
+        .from(boardList)
+        .where(
+          sql`${boardList.id} = ${newList.id} AND ${boardList.boardId}  = (
+        select ${board.id} from ${board}
+        where ${board.id} = ${boardId} AND ${board.orgId} = ${orgId}
+      )`
+        );
       revalidatePath(`/board/${boardId}`);
-
       return copiedList;
     } catch (e) {
       console.log(e);

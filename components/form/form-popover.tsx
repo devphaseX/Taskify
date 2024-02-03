@@ -39,6 +39,8 @@ export const FormPopOver = ({
     },
   });
 
+  console.log({ result });
+
   const onSubmit = useCallback((form: FormData) => {
     const payload = Object.fromEntries(form) as unknown as CreateBoardInput;
     console.log({ payload });
@@ -66,7 +68,12 @@ export const FormPopOver = ({
         >
           <X className="w-4 h-4 " />
         </Button>
-        <form action={onSubmit}>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            onSubmit(new FormData(event.target as HTMLFormElement));
+          }}
+        >
           <div className="space-y-4">
             <FormPicker id="image" errors={result.validationError} />
             <FormInput
