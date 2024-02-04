@@ -212,10 +212,12 @@ export const copyListAction = serverAction(
             ...shareProps,
             title: `${shareProps.title} - Copy`,
             order: sql<number>`
-            (
+            coalesce(
+              (
             select max(list.order)::integer + 1 from list
             where list.board_id = ${sql.raw(`'${boardId}'`)}
-            )`,
+            )
+            , 1)`,
           })
           .returning();
 

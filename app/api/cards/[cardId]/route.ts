@@ -26,7 +26,7 @@ export async function GET(
     }
 
     const [currentCard] = await db
-      .select({ ...getTableColumns(card), listTitle: list.title })
+      .select({ ...getTableColumns(card), list })
       .from(card)
       .innerJoin(list, eq(list.id, card.listId)).where(sql`
         ${cardId} = ${card.id} AND ${card.listId} in (

@@ -16,7 +16,7 @@ type FormInputProps = {
   disabled?: boolean;
   defaultValue?: string;
   className?: string;
-  inputRef?: MutableRefObject<HTMLInputElement>;
+  inputRef?: MutableRefObject<HTMLInputElement | null>;
   fieldsError?: Record<string, string[] | undefined>;
   onBlur?: () => void;
 };

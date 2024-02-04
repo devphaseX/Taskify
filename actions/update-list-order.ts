@@ -123,7 +123,6 @@ export const reorderCardAction = serverAction(
         .where(sql`${board.id} = ${boardId} AND ${board.orgId} = ${orgId}`);
 
       if (!currentBoard) throw new Error('Board not found');
-      console.log({ sources, destination });
 
       await db.transaction(async () => {
         const updateSourceCards = Promise.all(
@@ -139,8 +138,6 @@ export const reorderCardAction = serverAction(
               )
               .returning()
               .then(([data]) => {
-                console.log({ destination: false, data });
-
                 if (!data) throw new Error('Data not found');
               })
           )
@@ -159,7 +156,6 @@ export const reorderCardAction = serverAction(
               )
               .returning()
               .then(([data]) => {
-                console.log({ destination: true, data });
                 if (!data) throw new Error('Data not found');
               })
           ) ?? []
@@ -200,7 +196,6 @@ export const reorderCardAction = serverAction(
   `
         )
         .orderBy(asc(boardList.order));
-      console.log(lists.map((card) => card));
       revalidatePath(`/board/${boardId}`);
       return lists;
     } catch (e) {
