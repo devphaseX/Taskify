@@ -122,19 +122,26 @@ export const reorderCardAction = serverAction(
         .where(sql`${board.id} = ${boardId} AND ${board.orgId} = ${orgId}`);
 
       if (!currentBoard) throw new Error('Board not found');
+      console.log({ sources, destination });
 
       await db.transaction(async () => {
         const updateSourceCards = Promise.all(
           sources.map((item) =>
             db
               .update(card)
-              .set({ order: item.order })
+              .set({ order: item.order, listId: item.listId })
               .where(
                 sql`${card.listId} = (
-                select ${list.id} from ${list}
-                where ${list.id} = ${item.id} and ${list.boardId} = ${boardId}
+                  select id from list
+                  where list.id = ${item.id} and list.board_id = ${boardId}
               ) AND ${item.id} = ${card.id}`
               )
+              .returning()
+              .then(([data]) => {
+                console.log({ destination: false, data });
+
+                if (!data) throw new Error('Data not found');
+              })
           )
         );
 
@@ -142,13 +149,18 @@ export const reorderCardAction = serverAction(
           destination?.map((item) =>
             db
               .update(card)
-              .set({ order: item.order })
+              .set({ order: item.order, listId: item.listId })
               .where(
                 sql`${card.listId} = (
-              select ${list.id} from ${list}
-              where ${list.id} = ${item.id} and ${list.boardId} = ${boardId}
+                select id from list
+                where list.id = ${item.id} and list.board_id = ${boardId}
             ) AND ${item.id} = ${card.id}`
               )
+              .returning()
+              .then(([data]) => {
+                console.log({ destination: true, data });
+                if (!data) throw new Error('Data not found');
+              })
           ) ?? []
         );
         await Promise.all([updateSourceCards, updateDestinationCards]);
@@ -186,6 +198,7 @@ export const reorderCardAction = serverAction(
   `
         )
         .orderBy(asc(boardList.order));
+      console.log(lists.map((card) => card));
       revalidatePath(`/board/${boardId}`);
       return lists;
     } catch (e) {

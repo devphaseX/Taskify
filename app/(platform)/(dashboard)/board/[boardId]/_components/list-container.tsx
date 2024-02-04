@@ -32,6 +32,8 @@ export const ListContainer = ({ data }: ListContainerProps) => {
   const router = useRouter();
   const { boardId } = useParams() as { boardId: string };
 
+  console.log({ outer: data });
+
   const { execute: reorderList } = useAction(reorderListAction, {
     onSuccess: (data, input) => {
       if (boardList === input.items) {
@@ -49,7 +51,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
     },
   });
 
-  const { execute: reorderCard } = useAction(reorderCardAction, {
+  const { execute: reorderCard, result } = useAction(reorderCardAction, {
     onSuccess: (data, input) => {
       if (
         boardList.filter(
@@ -63,6 +65,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
       }
     },
     onError: () => {
+      console.log({ data });
       setBoardList(data);
       toast.success('List boarder reorder failed');
     },
@@ -96,7 +99,11 @@ export const ListContainer = ({ data }: ListContainerProps) => {
     //user moves a card
 
     if (type === 'card') {
-      let newOrderedData = [...boardList];
+      let newOrderedData: typeof boardList =
+        typeof structuredClone !== 'undefined'
+          ? structuredClone(boardList)
+          : JSON.parse(JSON.stringify(boardList));
+
       const sourceList = newOrderedData.find(
         (list) => list.id === source.droppableId
       );
@@ -110,12 +117,11 @@ export const ListContainer = ({ data }: ListContainerProps) => {
 
       //check if cards exist on the sourelist
       sourceList.cards ||= [];
+
       //check if cards exist on the destinationList
       destinationList.cards ||= [];
-
-      //Moving the card in the same list
-
-      if (sourceList === destinationList) {
+      if (sourceList.id === destinationList.id) {
+        // sourceList.cards &&= [...sourceList.cards];
         const reorderCards = reorder(
           sourceList.cards,
           source.index,
@@ -127,6 +133,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
 
         //TODO trigger server action
       } else {
+        //Moving the card in the same list
         //move the card to another list
         const [movedCard] = sourceList.cards.splice(source.index, 1);
 
@@ -146,6 +153,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
           order: index + 1,
         }));
 
+        setBoardList(newOrderedData);
         reorderCard({
           boardId,
           sources: sourceList.cards,
@@ -154,6 +162,8 @@ export const ListContainer = ({ data }: ListContainerProps) => {
       }
     }
   };
+
+  console.log(result);
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="lists" type="list" direction="horizontal">
