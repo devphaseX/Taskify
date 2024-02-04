@@ -33,6 +33,10 @@ export const ListContainer = ({ data }: ListContainerProps) => {
   const { boardId } = useParams() as { boardId: string };
   const getBoardListState = useRef(() => boardList);
 
+  useEffect(() => {
+    setBoardList(data);
+  }, [data]);
+
   const { execute: reorderList } = useAction(reorderListAction, {
     onSuccess: (data, input) => {
       if (getBoardListState.current() === input.items) {

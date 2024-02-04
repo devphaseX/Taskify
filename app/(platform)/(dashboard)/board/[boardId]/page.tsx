@@ -14,8 +14,6 @@ type BoardIdPageProps = {
   params: BoardIdPageParams;
 };
 
-export const dynamic = 'force-dynamic';
-
 const BoardIdPage = async ({ params }: BoardIdPageProps) => {
   params = BoardIdPageParamsSchema.parse(params);
   const { orgId } = auth();
@@ -55,10 +53,6 @@ const BoardIdPage = async ({ params }: BoardIdPageProps) => {
   `
     )
     .orderBy(asc(boardList.order));
-
-  console.log(
-    JSON.stringify({ cards: lists.map(({ cards }) => cards) }, undefined, 2)
-  );
 
   return (
     <div className="p-4 h-full overflow-x-auto">

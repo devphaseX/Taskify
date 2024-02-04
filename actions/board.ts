@@ -102,18 +102,18 @@ const deleteBoardAction = serverAction(DeleteBoardSchema, async ({ id }) => {
   const { orgId, userId } = auth();
 
   if (!userId) {
-    return new Error('User not authenenicated');
+    throw new Error('User not authenenicated');
   }
 
   if (!orgId) {
-    return new Error('Board can only be created by organization');
+    throw new Error('Board can only be created by organization');
   }
+
   try {
     await db
       .delete(board)
       .where(sql`${board.id} = ${id} AND ${board.orgId} = ${orgId}`);
-    revalidatePath(`/organization/${orgId}`);
-    redirect(`/organization/${orgId}`);
+    return redirect(`/organization/${orgId}`);
   } catch (e) {
     throw new Error('An error occurred while removing board.');
   }

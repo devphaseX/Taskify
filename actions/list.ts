@@ -8,7 +8,7 @@ import { TypeOf, number, object, string } from 'zod';
 import { db } from '@/lib/schema/db';
 
 import { createInsertSchema } from 'drizzle-zod';
-import { asc, getTableColumns, sql } from 'drizzle-orm';
+import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
 import { PgDialect, alias } from 'drizzle-orm/pg-core';
 import { SelectResultFields, jsonAggBuildObject } from '@/lib/utils';
 
@@ -188,6 +188,7 @@ export const copyListAction = serverAction(
         `,
         })
         .from(boardList)
+        .innerJoin(board, eq(board.id, boardList.boardId))
         .where(
           sql`${boardList.id} = ${id} AND ${boardList.boardId}  = (
             select ${board.id} from ${board}
@@ -249,12 +250,14 @@ export const copyListAction = serverAction(
     `,
         })
         .from(boardList)
+        .innerJoin(board, eq(board.id, boardList.boardId))
         .where(
           sql`${boardList.id} = ${newList.id} AND ${boardList.boardId}  = (
         select ${board.id} from ${board}
         where ${board.id} = ${boardId} AND ${board.orgId} = ${orgId}
       )`
         );
+
       revalidatePath(`/board/${boardId}`);
       return copiedList;
     } catch (e) {
