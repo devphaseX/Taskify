@@ -41,9 +41,9 @@ export const ListItem = ({ list, index }: ListItemProps) => {
           >
             <ListHeader data={list} onAddCard={enableEdit} />
             <Droppable droppableId={list.id} type="card">
-              {(provided) => (
+              {({ innerRef, ...provided }) => (
                 <ol
-                  ref={provided.innerRef}
+                  ref={innerRef}
                   {...provided.droppableProps}
                   className={cn(
                     'mx-1 px-1 py-0.5 flex flex-col gap-y-2',
