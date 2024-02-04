@@ -31,18 +31,18 @@ export const ListContainer = ({ data }: ListContainerProps) => {
   const [boardList, setBoardList] = useState(data);
   const router = useRouter();
   const { boardId } = useParams() as { boardId: string };
-
-  console.log({ outer: data });
+  const getBoardListState = useRef(() => boardList);
 
   const { execute: reorderList } = useAction(reorderListAction, {
     onSuccess: (data, input) => {
-      if (boardList === input.items) {
+      if (getBoardListState.current() === input.items) {
         setBoardList(data);
         toast.success('List boarder reorder succesfully');
       }
     },
     onError: () => {
       setBoardList(data);
+      getBoardListState.current = () => data;
       toast.success('List boarder reorder failed');
     },
 
@@ -51,22 +51,15 @@ export const ListContainer = ({ data }: ListContainerProps) => {
     },
   });
 
-  const { execute: reorderCard, result } = useAction(reorderCardAction, {
-    onSuccess: (data, input) => {
-      if (
-        boardList.filter(
-          (list) =>
-            list === (input.sources as unknown as ListWithCards) ||
-            list === (input.destination as unknown as ListWithCards)
-        ).length === 2
-      ) {
-        setBoardList(data);
-        toast.success('List boarder reorder succesfully');
-      }
+  const { execute: reorderCard } = useAction(reorderCardAction, {
+    onSuccess: (data) => {
+      setBoardList(data);
+      toast.success('List boarder reorder succesfully');
     },
     onError: () => {
-      console.log({ data });
+      alert('error');
       setBoardList(data);
+      getBoardListState.current = () => data;
       toast.success('List boarder reorder failed');
     },
 
@@ -91,6 +84,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
         source.index,
         destination.index
       ).map((item, index) => ({ ...item, order: index + 1 }));
+      getBoardListState.current = () => reorderedList;
       setBoardList(reorderedList);
       const updateId = uuid();
       reorderList({ boardId, items: reorderedList, updateId });
@@ -128,6 +122,7 @@ export const ListContainer = ({ data }: ListContainerProps) => {
           destination.index
         ).map((item, index) => ({ ...item, order: index + 1 }));
         sourceList.cards = reorderCards;
+        getBoardListState.current = () => newOrderedData;
         setBoardList(newOrderedData);
         reorderCard({ boardId, sources: reorderCards });
 
@@ -153,6 +148,8 @@ export const ListContainer = ({ data }: ListContainerProps) => {
           order: index + 1,
         }));
 
+        getBoardListState.current = () => newOrderedData;
+
         setBoardList(newOrderedData);
         reorderCard({
           boardId,
@@ -163,7 +160,6 @@ export const ListContainer = ({ data }: ListContainerProps) => {
     }
   };
 
-  console.log(result);
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="lists" type="list" direction="horizontal">

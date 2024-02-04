@@ -47,7 +47,11 @@ export type SelectResultFields<
   >;
 } & {};
 
-export function jsonAggBuildObject<T extends SelectedFields>(shape: T) {
+export function jsonAggBuildObject<T extends SelectedFields>(
+  shape: T,
+  extra?: SQL<unknown>,
+  distinct = false
+) {
   const chunks: SQL[] = [];
 
   Object.entries(shape).forEach(([key, value]) => {
@@ -60,7 +64,11 @@ export function jsonAggBuildObject<T extends SelectedFields>(shape: T) {
 
   return sql<Array<SelectResultFields<T>>>`coalesce(
       json_agg(
-        distinct jsonb_build_object(${sql.join(chunks)})
+        ${
+          distinct ? sql.raw('distinct ') : sql.raw('')
+        }jsonb_build_object(${sql.join(chunks)}) ${
+    (distinct === false && extra) ?? sql.raw('')
+  }
         ),'[]'::json)`;
 }
 

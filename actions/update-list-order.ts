@@ -70,7 +70,8 @@ export const reorderListAction = serverAction(
           )
 
           select ${jsonAggBuildObject(
-            getTableColumns(boardCardList)
+            getTableColumns(boardCardList),
+            sql` order by ${boardCardList.order} asc`
           )} from ${boardCardList}
          )
     `,
@@ -131,10 +132,10 @@ export const reorderCardAction = serverAction(
               .update(card)
               .set({ order: item.order, listId: item.listId })
               .where(
-                sql`${card.listId} = (
-                  select id from list
-                  where list.id = ${item.id} and list.board_id = ${boardId}
-              ) AND ${item.id} = ${card.id}`
+                sql`${boardId} = (
+                  select ${list.boardId} from list
+                  where ${list.id} = ${item.listId}
+                ) AND ${item.id} = ${card.id}`
               )
               .returning()
               .then(([data]) => {
@@ -151,10 +152,10 @@ export const reorderCardAction = serverAction(
               .update(card)
               .set({ order: item.order, listId: item.listId })
               .where(
-                sql`${card.listId} = (
-                select id from list
-                where list.id = ${item.id} and list.board_id = ${boardId}
-            ) AND ${item.id} = ${card.id}`
+                sql`${boardId} = (
+                select ${list.boardId} from list
+                where ${list.id} = ${item.listId}
+              ) and ${item.id} = ${card.id}`
               )
               .returning()
               .then(([data]) => {
@@ -182,7 +183,8 @@ export const reorderCardAction = serverAction(
           )
 
           select ${jsonAggBuildObject(
-            getTableColumns(boardCardList)
+            getTableColumns(boardCardList),
+            sql` order by ${boardCardList.order} asc`
           )} from ${boardCardList}
          )
     `,
