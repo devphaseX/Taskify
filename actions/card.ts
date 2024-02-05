@@ -7,7 +7,7 @@ import { serverAction } from '@/lib/action';
 import { board, card, list } from '@/lib/schema';
 import { auth } from '@clerk/nextjs';
 import { db } from '@/lib/schema/db';
-import { stringify } from 'querystring';
+import { createAuditLog } from './create-audit';
 
 const CreateCardSchema = createInsertSchema(card, {
   listId: string().uuid(),
@@ -52,20 +52,32 @@ export const createCardAction = serverAction(CreateCardSchema, async (form) => {
 
     if (!currentList) throw new Error('List not found');
 
-    const [newCard] = await db
-      .insert(card)
-      .values({
-        title,
-        listId,
-        order: sql<number>`
-            coalesce(
-                (
-                    select max(card.order)::integer + 1 from card
-                    where card.list_id = ${sql.raw(`'${listId}'`)}
-                ), 1)
-      `,
-      })
-      .returning();
+    const newCard = await db.transaction(async () => {
+      const [newCard] = await db
+        .insert(card)
+        .values({
+          title,
+          listId,
+          order: sql<number>`
+              coalesce(
+                  (
+                      select max(card.order)::integer + 1 from card
+                      where card.list_id = ${sql.raw(`'${listId}'`)}
+                  ), 1)
+        `,
+        })
+        .returning();
+
+      await createAuditLog({
+        data: {
+          entityId: newCard.id,
+          action: 'create',
+          entityType: 'card',
+          entityTitle: newCard.title,
+        },
+      });
+      return newCard;
+    });
 
     revalidatePath(`/board/${boardId}`);
 

@@ -2,6 +2,7 @@ import {
   PgTable,
   integer,
   json,
+  pgEnum,
   pgTable,
   serial,
   text,
@@ -59,4 +60,20 @@ export const cardRelations = relations(card, ({ one }) => ({
 
 export type Card = typeof card.$inferSelect;
 
-export { board, list, card };
+export const actionEnum = pgEnum('action', ['create', 'delete', 'update']);
+export const entityTypeEnum = pgEnum('entity_type', ['board', 'card', 'list']);
+
+const auditLog = pgTable('audit_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orgId: text('org_id').notNull(),
+  entityId: uuid('entity_id').notNull(),
+  entityTitle: varchar('entity_title', { length: 256 }).notNull(),
+  entityType: entityTypeEnum('entity_type').notNull(),
+  action: actionEnum('action').notNull(),
+  userId: text('user_id').notNull(),
+  userImage: text('user_image'),
+  userName: varchar('user_name', { length: 256 }),
+  ...getDocTimestamps(),
+});
+
+export { board, list, card, auditLog };
