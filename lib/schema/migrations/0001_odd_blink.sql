@@ -1,1 +1,0 @@
-ALTER TABLE "board" ADD COLUMN "updated_at" timestamp DEFAULT now();

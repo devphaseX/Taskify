@@ -85,3 +85,7 @@ export function jsonBuildObject<T extends SelectedFields>(shape: T) {
 
   return sql<SelectResultFields<T>>`json_build_object(${sql.join(chunks)})`;
 }
+
+export function absoluteUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_APP_URL}/${path}`;
+}

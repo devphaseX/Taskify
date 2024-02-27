@@ -9,7 +9,7 @@ import { db } from '@/lib/schema/db';
 import { eq, sql } from 'drizzle-orm';
 import { capitalize } from '@/lib/utils';
 import { createAuditLog } from './create-audit';
-import { updateUsedBoardCount } from '@/lib/org-limit';
+import { allowBoardCreate, updateUsedBoardCount } from '@/lib/org-limit';
 
 const CreateBoardSchema = object({
   title: string({ invalid_type_error: 'Title is required' }).min(3, {
@@ -46,6 +46,14 @@ const createBoardAction = serverAction(CreateBoardSchema, async (form) => {
 
   if (!orgId) {
     throw new Error('Board can only be created by organization');
+  }
+
+  const boardCreatePermitted = await allowBoardCreate();
+
+  if (!boardCreatePermitted) {
+    throw new Error(
+      'You have reach the limit for your free boards.Please upgrade to create more'
+    );
   }
   try {
     const newBoard = await db.transaction(async () => {

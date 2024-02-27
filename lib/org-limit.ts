@@ -57,12 +57,8 @@ export const allowBoardCreate = async () => {
       throw new Error('Unauthorized');
     }
 
-    const [boardLimit] = await db
-      .select()
-      .from(orgLimit)
-      .where(eq(orgLimit.orgId, orgId));
-
-    return !(boardLimit && boardLimit.count < MAX_FREE_BOARD);
+    const { count } = await updateUsedBoardCount();
+    return !!(count < MAX_FREE_BOARD);
   } catch (e) {
     if (
       Object(e) === e &&
@@ -82,12 +78,8 @@ export const getBoardCreateRemainCount = async () => {
       throw new Error('Unauthorized');
     }
 
-    const [boardLimit] = await db
-      .select()
-      .from(orgLimit)
-      .where(eq(orgLimit.orgId, orgId));
-
-    return boardLimit?.count ?? 0;
+    const { count } = await updateUsedBoardCount();
+    return count;
   } catch (e) {
     if (
       Object(e) === e &&

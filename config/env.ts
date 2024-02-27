@@ -15,6 +15,15 @@ const EnvSchema = object({
   NEXT_PUBLIC_UNSPLASH_API_KEY: string({
     required_error: 'NEXT_PUBLIC_UNSPLASH_API_KEY is missing',
   }),
+  STRIPE_API_KEY: string({
+    required_error: 'STRIPE_API_KEY is missing',
+  }),
+  NEXT_PUBLIC_APP_URL: string({
+    required_error: 'NEXT_PUBLIC_APP_URL is missing',
+  }),
+  STRIPE_WEBHOOK_SECRET: string({
+    required_error: 'STRIPE_WEBHOOK_SECRET is missing',
+  }),
 });
 
 export type ParsedEnv = TypeOf<typeof EnvSchema>;

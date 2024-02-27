@@ -54,11 +54,26 @@ CREATE TABLE IF NOT EXISTS "list" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "org_limit" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"orgId" text,
-	"count" integer DEFAULT 0,
+	"orgId" text NOT NULL,
+	"count" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "org_limit_orgId_unique" UNIQUE("orgId")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "org_subscription" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"org_id" uuid NOT NULL,
+	"stripe_customer_id" text,
+	"stripe_subscription_id" text,
+	"stripe_price_id" text,
+	"subscription_end_period" timestamp,
+	"created_at" timestamp DEFAULT now(),
+	"updated_at" timestamp DEFAULT now(),
+	CONSTRAINT "org_subscription_org_id_unique" UNIQUE("org_id"),
+	CONSTRAINT "org_subscription_stripe_customer_id_unique" UNIQUE("stripe_customer_id"),
+	CONSTRAINT "org_subscription_stripe_subscription_id_unique" UNIQUE("stripe_subscription_id"),
+	CONSTRAINT "org_subscription_stripe_price_id_unique" UNIQUE("stripe_price_id")
 );
 --> statement-breakpoint
 DO $$ BEGIN

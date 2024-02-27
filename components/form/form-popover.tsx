@@ -11,6 +11,7 @@ import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { FormPicker } from './form-picker';
 import { useParams, useRouter } from 'next/navigation';
+import { useProModal } from '@/hooks/use-pro-modal';
 
 type FormPopOverProps = {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ export const FormPopOver = ({
   sideOffset = 0,
 }: FormPopOverProps) => {
   const [opened, setOpened] = useState(false);
+  const { onOpen } = useProModal();
   const router = useRouter();
   const { execute, result, reset, status } = useAction(createBoardAction, {
     onSuccess: ({ message, data }) => {
@@ -36,6 +38,12 @@ export const FormPopOver = ({
     },
     onError: ({ serverError }) => {
       toast.error(serverError);
+      if (
+        serverError &&
+        /You have reach the limit for your free boards/i.test(serverError)
+      ) {
+        onOpen();
+      }
     },
   });
 

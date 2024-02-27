@@ -88,4 +88,16 @@ const orgLimit = pgTable('org_limit', {
 
 export type OrgLimit = typeof orgLimit.$inferSelect;
 
-export { board, list, card, auditLog, orgLimit };
+const orgSubscription = pgTable('org_subscription', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orgId: text('org_id').unique().notNull(),
+  stripeCustomerId: text('stripe_customer_id').unique(),
+  stripeSubscriptionId: text('stripe_subscription_id').unique(),
+  stripePriceId: text('stripe_price_id').unique(),
+  subscriptionEndPeriod: timestamp('subscription_end_period'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type OrgSubscription = typeof orgSubscription.$inferSelect;
+export { board, list, card, auditLog, orgLimit, orgSubscription };
