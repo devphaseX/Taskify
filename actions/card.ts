@@ -131,6 +131,15 @@ export const UpdateCardAction = serverAction(UpdateCardSchema, async (form) => {
 
     if (!updatedCard) throw new Error('Card not found');
 
+    await createAuditLog({
+      data: {
+        entityId: updatedCard.id,
+        action: 'update',
+        entityType: 'card',
+        entityTitle: updatedCard.title,
+      },
+    });
+
     revalidatePath(`/board/${boardId}`);
 
     return updatedCard;
@@ -195,6 +204,15 @@ export const copyCardAction = serverAction(
         })
         .returning();
 
+      await createAuditLog({
+        data: {
+          entityId: copiedCard.id,
+          action: 'create',
+          entityType: 'card',
+          entityTitle: copiedCard.title,
+        },
+      });
+
       revalidatePath(`/board/${boardId}`);
       return copiedCard;
     } catch (e) {
@@ -242,6 +260,15 @@ export const deleteCardAction = serverAction(
         .returning();
 
       if (!deleteCard) throw new Error('Card not found');
+
+      await createAuditLog({
+        data: {
+          entityId: deleteCard.id,
+          action: 'delete',
+          entityType: 'card',
+          entityTitle: deleteCard.title,
+        },
+      });
 
       revalidatePath(`/board/${boardId}`);
       return deleteCard;

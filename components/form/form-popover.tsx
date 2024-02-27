@@ -27,7 +27,7 @@ export const FormPopOver = ({
 }: FormPopOverProps) => {
   const [opened, setOpened] = useState(false);
   const router = useRouter();
-  const { execute, result, reset } = useAction(createBoardAction, {
+  const { execute, result, reset, status } = useAction(createBoardAction, {
     onSuccess: ({ message, data }) => {
       reset();
       toast.success(message);
@@ -78,8 +78,11 @@ export const FormPopOver = ({
               label="Board title"
               type="text"
               fieldsError={result.validationError}
+              disabled={status === 'executing'}
             />
-            <FormSubmit className="w-full">Create</FormSubmit>
+            <FormSubmit className="w-full" disabled={status === 'executing'}>
+              Create
+            </FormSubmit>
           </div>
         </form>
       </PopoverContent>

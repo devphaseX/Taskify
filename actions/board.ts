@@ -8,7 +8,8 @@ import { TypeOf, object, string } from 'zod';
 import { db } from '@/lib/schema/db';
 import { eq, sql } from 'drizzle-orm';
 import { capitalize } from '@/lib/utils';
-import { redirect } from 'next/navigation';
+import { createAuditLog } from './create-audit';
+import { updateUsedBoardCount } from '@/lib/org-limit';
 
 const CreateBoardSchema = object({
   title: string({ invalid_type_error: 'Title is required' }).min(3, {
@@ -47,11 +48,24 @@ const createBoardAction = serverAction(CreateBoardSchema, async (form) => {
     throw new Error('Board can only be created by organization');
   }
   try {
-    const [newBoard] = await db
-      .insert(board)
-      .values({ title: form.title, orgId, image: form.image })
-      .returning();
+    const newBoard = await db.transaction(async () => {
+      const [newBoard] = await db
+        .insert(board)
+        .values({ title: form.title, orgId, image: form.image })
+        .returning();
+      await updateUsedBoardCount();
+      return newBoard;
+    });
     revalidatePath(`/organization/${orgId}`);
+
+    await createAuditLog({
+      data: {
+        entityId: newBoard.id,
+        action: 'create',
+        entityType: 'board',
+        entityTitle: newBoard.title,
+      },
+    });
 
     return { message: 'Board created successfully' as string, data: newBoard };
   } catch (e) {
@@ -88,6 +102,15 @@ export const updateBoardAction = serverAction(
       if (!updateBoard) {
         throw new Error('Board not found');
       }
+
+      await createAuditLog({
+        data: {
+          entityId: updateBoard.id,
+          action: 'update',
+          entityType: 'list',
+          entityTitle: updateBoard.title,
+        },
+      });
       revalidatePath(`/board/${updateBoard.id}`);
       return updateBoard;
     } catch (e) {
@@ -110,11 +133,27 @@ const deleteBoardAction = serverAction(DeleteBoardSchema, async ({ id }) => {
   }
 
   try {
-    await db
-      .delete(board)
-      .where(sql`${board.id} = ${id} AND ${board.orgId} = ${orgId}`);
-    return redirect(`/organization/${orgId}`);
+    const deletedBoard = await db.transaction(async () => {
+      const [deletedBoard] = await db
+        .delete(board)
+        .where(sql`${board.id} = ${id} AND ${board.orgId} = ${orgId}`)
+        .returning();
+
+      await createAuditLog({
+        data: {
+          entityId: deletedBoard.id,
+          action: 'delete',
+          entityType: 'list',
+          entityTitle: deletedBoard.title,
+        },
+      });
+      await updateUsedBoardCount();
+      return deletedBoard;
+    });
+
+    return { data: { deletedBoard } };
   } catch (e) {
+    console.log(e);
     throw new Error('An error occurred while removing board.');
   }
 });

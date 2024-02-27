@@ -8,9 +8,10 @@ import { TypeOf, number, object, string } from 'zod';
 import { db } from '@/lib/schema/db';
 
 import { createInsertSchema } from 'drizzle-zod';
-import { asc, eq, getTableColumns, sql } from 'drizzle-orm';
-import { PgDialect, alias } from 'drizzle-orm/pg-core';
+import { eq, getTableColumns, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { SelectResultFields, jsonAggBuildObject } from '@/lib/utils';
+import { createAuditLog } from './create-audit';
 
 const CreateListSchema = createInsertSchema(list, {
   boardId: string().uuid(),
@@ -56,6 +57,15 @@ export const createListAction = serverAction(CreateListSchema, async (form) => {
       })
       .returning();
 
+    await createAuditLog({
+      data: {
+        entityId: newList.id,
+        action: 'create',
+        entityType: 'list',
+        entityTitle: newList.title,
+      },
+    });
+
     revalidatePath(`/board/${form.boardId}`);
     return newList;
   } catch (e) {
@@ -98,6 +108,14 @@ export const updateListAction = serverAction(UpdateListSchema, async (form) => {
       )
       .returning();
 
+    await createAuditLog({
+      data: {
+        entityId: newList.id,
+        action: 'update',
+        entityType: 'list',
+        entityTitle: newList.title,
+      },
+    });
     revalidatePath(`/board/${form.boardId}`);
     return newList;
   } catch (e) {
@@ -135,6 +153,14 @@ export const deleteListAction = serverAction(
         .returning();
       revalidatePath(`/board/${boardId}`);
 
+      await createAuditLog({
+        data: {
+          entityId: deletedList.id,
+          action: 'delete',
+          entityType: 'list',
+          entityTitle: deletedList.title,
+        },
+      });
       return deletedList;
     } catch (e) {
       throw new Error('An error occurred while removing board.');
@@ -233,6 +259,14 @@ export const copyListAction = serverAction(
           )
         );
 
+        await createAuditLog({
+          data: {
+            entityId: newList.id,
+            action: 'create',
+            entityType: 'list',
+            entityTitle: newList.title,
+          },
+        });
         return newList;
       });
 

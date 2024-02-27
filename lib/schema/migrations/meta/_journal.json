@@ -64,6 +64,20 @@
       "when": 1707156562127,
       "tag": "0008_petite_bloodstorm",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1708950320820,
+      "tag": "0009_jittery_joystick",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1708950327736,
+      "tag": "0010_gigantic_skin",
+      "breakpoints": true
     }
   ]
 }

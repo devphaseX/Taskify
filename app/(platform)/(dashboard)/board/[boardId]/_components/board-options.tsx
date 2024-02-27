@@ -8,8 +8,10 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { board } from '@/lib/schema';
+import { useAuth } from '@clerk/nextjs';
 import { MoreHorizontal, X } from 'lucide-react';
 import { useAction } from 'next-safe-action/hook';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 type BoardOptionsProps = {
@@ -18,9 +20,13 @@ type BoardOptionsProps = {
 
 export const BoardOptions = ({ id }: BoardOptionsProps) => {
   const [opened, setOpened] = useState(false);
+  const router = useRouter();
+  const { orgId } = useAuth();
   const { execute: deleteBoard, status } = useAction(deleteBoardAction, {
     onSuccess: () => {
       toast.success('Board delete succesfully');
+      router.push(`/organization/${orgId}`);
+      router.refresh();
     },
     onError: () => {
       toast.error('Board delete failed');

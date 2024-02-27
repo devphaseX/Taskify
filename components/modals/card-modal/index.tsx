@@ -8,6 +8,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Header } from './header';
 import { Description } from './description';
 import { Actions } from './actions';
+import { AuditLog } from '@/lib/schema';
+import { Activity } from './activity';
 
 export const CardModal = () => {
   const id = useCardModal((state) => state.id);
@@ -16,6 +18,15 @@ export const CardModal = () => {
   const { data } = useQuery<{ data: CardWithList }>({
     queryKey: ['card', id],
     queryFn: () => fetcher(`/api/cards/${id}`),
+    enabled: !!id,
+  });
+
+  const { data: cardLogData, status: cardLogDataStatus } = useQuery<{
+    data: Array<AuditLog>;
+  }>({
+    queryKey: ['card-logs', id],
+    queryFn: ({ queryKey: [_, id] }) => fetcher(`/api/cards/${id}/logs`),
+    enabled: !!id,
   });
 
   const cardData = data?.data;
@@ -31,6 +42,12 @@ export const CardModal = () => {
               ) : (
                 <Description.Skeleton />
               )}
+
+              {cardLogData?.data ? (
+                <Activity data={cardLogData?.data} />
+              ) : cardLogDataStatus === 'pending' ? (
+                <Activity.Skeleton />
+              ) : null}
             </div>
           </div>
           {cardData ? <Actions data={cardData} /> : <Actions.Skeleton />}

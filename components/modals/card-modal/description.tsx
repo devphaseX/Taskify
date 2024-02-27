@@ -55,6 +55,8 @@ export const Description = ({ data }: DescriptionProps) => {
   const { execute: updateCard, result } = useAction(UpdateCardAction, {
     onSuccess: (data, _, reset) => {
       queryClient.invalidateQueries({ queryKey: ['card', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['card-log', data.id] });
+
       toast.success(`Card "${data.title}" updated`);
       setDescription(data.description);
       reset();

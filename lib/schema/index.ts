@@ -4,8 +4,8 @@ import {
   json,
   pgEnum,
   pgTable,
-  serial,
   text,
+  timestamp,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -76,4 +76,16 @@ const auditLog = pgTable('audit_log', {
   ...getDocTimestamps(),
 });
 
-export { board, list, card, auditLog };
+export type AuditLog = typeof auditLog.$inferSelect;
+
+const orgLimit = pgTable('org_limit', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  orgId: text('orgId').unique().notNull(),
+  count: integer('count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export type OrgLimit = typeof orgLimit.$inferSelect;
+
+export { board, list, card, auditLog, orgLimit };
