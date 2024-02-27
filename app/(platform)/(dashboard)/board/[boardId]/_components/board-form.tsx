@@ -4,7 +4,7 @@ import { updateBoardAction } from '@/actions/board';
 import { FormInput } from '@/components/form/form-input';
 import { Button } from '@/components/ui/button';
 import { Board } from '@/lib/schema';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import {
   ElementRef,
   MutableRefObject,

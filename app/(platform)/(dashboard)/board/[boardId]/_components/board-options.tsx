@@ -10,7 +10,7 @@ import {
 import { board } from '@/lib/schema';
 import { useAuth } from '@clerk/nextjs';
 import { MoreHorizontal, X } from 'lucide-react';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';

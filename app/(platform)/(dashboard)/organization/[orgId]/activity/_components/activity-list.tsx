@@ -30,7 +30,7 @@ export const ActivityList = async () => {
   );
 };
 
-ActivityList.Skeleton = function () {
+ActivityList.Skeleton = function ActivitySkeleton() {
   return (
     <ol className="space-y-4 mt-4">
       <Skeleton className="w-[80%] h-14" />

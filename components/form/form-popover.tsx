@@ -1,7 +1,7 @@
 'use client';
 
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { CreateBoardInput, createBoardAction } from '@/actions/board';
 import { FormInput } from './form-input';
 import { FormSubmit } from './form-submit';
@@ -10,7 +10,7 @@ import { Button } from '../ui/button';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { FormPicker } from './form-picker';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useProModal } from '@/hooks/use-pro-modal';
 
 type FormPopOverProps = {
@@ -47,10 +47,13 @@ export const FormPopOver = ({
     },
   });
 
-  const onSubmit = useCallback((form: FormData) => {
-    const payload = Object.fromEntries(form) as unknown as CreateBoardInput;
-    execute(payload as any);
-  }, []);
+  const onSubmit = useCallback(
+    (form: FormData) => {
+      const payload = Object.fromEntries(form) as unknown as CreateBoardInput;
+      execute(payload as any);
+    },
+    [execute]
+  );
 
   return (
     <Popover open={opened} onOpenChange={setOpened}>
@@ -80,12 +83,12 @@ export const FormPopOver = ({
           }}
         >
           <div className="space-y-4">
-            <FormPicker id="image" errors={result.validationError} />
+            <FormPicker id="image" errors={result.validationErrors} />
             <FormInput
               id="title"
               label="Board title"
               type="text"
-              fieldsError={result.validationError}
+              fieldsError={result.validationErrors}
               disabled={status === 'executing'}
             />
             <FormSubmit className="w-full" disabled={status === 'executing'}>

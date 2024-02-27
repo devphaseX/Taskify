@@ -108,7 +108,7 @@ export const SideBarItem = ({
   );
 };
 
-SideBarItem.Skeleton = function () {
+SideBarItem.Skeleton = function SidebarItemSkeleton() {
   return (
     <div className="flex items-center gap-x-2">
       <div className="w-10 h-10 relative shrink-0">

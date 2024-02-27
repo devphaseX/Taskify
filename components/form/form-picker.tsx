@@ -33,7 +33,6 @@ export const FormPicker = ({ id, errors }: FormPickerProps) => {
           console.error('Failed to get images from Unplash');
         }
       } catch (e) {
-        console.log(errors);
         setImage(sampleImages);
       } finally {
         setFetchImages(false);

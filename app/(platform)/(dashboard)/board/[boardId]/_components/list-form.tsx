@@ -14,7 +14,7 @@ import { FormInput } from '@/components/form/form-input';
 import { useParams } from 'next/navigation';
 import { FormSubmit } from '@/components/form/form-submit';
 import { Button } from '@/components/ui/button';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { CreateListInput, createListAction } from '@/actions/list';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -82,7 +82,7 @@ export const ListForm = () => {
             className="text-sm px-2 py-1 h-7 font-medium
              border-transparent hover:border-input focus:border-input transition"
             placeholder="Enter list title..."
-            fieldsError={result.validationError}
+            fieldsError={result.validationErrors}
           />
           <input hidden value={boardId} name="boardId" />
           <div className="flex items-center gap-x-1">

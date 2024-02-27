@@ -4,7 +4,7 @@ import { useProModal } from '@/hooks/use-pro-modal';
 import { Dialog, DialogContent } from '../ui/dialog';
 import Image from 'next/image';
 import { Button } from '../ui/button';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { stripeRedirectAction } from '@/actions/stripe-redirect';
 import { toast } from 'sonner';
 

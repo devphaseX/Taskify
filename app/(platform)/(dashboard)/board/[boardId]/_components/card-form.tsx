@@ -10,7 +10,7 @@ import { FormTextarea } from './form-textarea';
 import { Input } from '@/components/ui/input';
 import { FormSubmit } from '@/components/form/form-submit';
 import { useParams } from 'next/navigation';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { CreateCardInput, createCardAction } from '@/actions/card';
 import { toast } from 'sonner';
 import { useEventListener, useOnClickOutside } from 'usehooks-ts';
@@ -84,7 +84,7 @@ export const CardForm = ({
           onKeyDown={onTextareaKeyDown}
           textareaRef={textareaRef}
           placeholder="Enter a title for this card..."
-          errors={result.validationError}
+          errors={result.validationErrors}
         />
         <Input
           hidden

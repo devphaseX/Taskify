@@ -3,7 +3,7 @@
 import { UpdateListInput, updateListAction } from '@/actions/list';
 import { FormInput } from '@/components/form/form-input';
 import { List } from '@/lib/schema';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { MutableRefObject, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useEventListener } from 'usehooks-ts';

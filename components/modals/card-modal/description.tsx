@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CardWithList } from '@/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlignLeft } from 'lucide-react';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -80,7 +80,7 @@ export const Description = ({ data }: DescriptionProps) => {
               textareaRef={textareaRef}
               placeholder="Add a more detailed description"
               defaultValue={data.description ?? undefined}
-              errors={result.validationError}
+              errors={result.validationErrors}
             />
             <div className="flex items-center gap-x-2">
               <FormSubmit>Save</FormSubmit>
@@ -109,7 +109,7 @@ export const Description = ({ data }: DescriptionProps) => {
   );
 };
 
-Description.Skeleton = function () {
+Description.Skeleton = function DescriptionSkeleton() {
   return (
     <div className="flex items-start gap-x-3 w-full">
       <Skeleton className="h-6 w-6 bg-neutral-200" />

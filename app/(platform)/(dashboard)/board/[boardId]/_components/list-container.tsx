@@ -6,7 +6,7 @@ import { ListForm } from './list-form';
 import { ListItem } from './list-item';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { v4 as uuid } from 'uuid';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import {
   reorderCardAction,
   reorderListAction,

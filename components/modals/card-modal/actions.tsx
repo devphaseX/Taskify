@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCardModal } from '@/hooks/use-card-modal';
 import { CardWithList } from '@/types';
 import { Copy, Trash } from 'lucide-react';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -84,7 +84,7 @@ export const Actions = ({ data }: ActionsProps) => {
   );
 };
 
-Actions.Skeleton = function () {
+Actions.Skeleton = function ActionsSkeleton() {
   return (
     <div className="space-y-2 mt-2">
       <Skeleton className="w-20 h-4 bg-neutral-200" />

@@ -9,7 +9,7 @@ import { MoreHorizontal, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { FormSubmit } from '@/components/form/form-submit';
 import { Separator } from '@/components/ui/separator';
-import { useAction } from 'next-safe-action/hook';
+import { useAction } from 'next-safe-action/hooks';
 import {
   DeleteListInput,
   UpdateListInput,
@@ -57,7 +57,7 @@ export const ListOptions = ({ data, onAddCard }: ListOptionsProps) => {
       resetCopyList();
       resetDeleteList();
     }
-  }, [opened]);
+  }, [opened, resetCopyList, resetDeleteList]);
 
   return (
     <Popover open={opened} onOpenChange={setOpened}>
