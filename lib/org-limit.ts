@@ -5,7 +5,6 @@ import { MAX_FREE_BOARD } from '@/constants/boards';
 import { db } from './schema/db';
 import { board, orgLimit } from './schema';
 import { DrizzleError, eq, sql } from 'drizzle-orm';
-import { PostgresError } from 'postgres';
 
 export const updateUsedBoardCount = async () => {
   try {
@@ -39,10 +38,7 @@ export const updateUsedBoardCount = async () => {
 
     return orgBoardLimit;
   } catch (e) {
-    if (
-      Object(e) === e &&
-      (e instanceof DrizzleError || e instanceof PostgresError)
-    ) {
+    if (Object(e) === e && e instanceof DrizzleError) {
       throw new Error('Unable to update board');
     }
 
@@ -60,10 +56,7 @@ export const allowBoardCreate = async () => {
     const { count } = await updateUsedBoardCount();
     return !!(count < MAX_FREE_BOARD);
   } catch (e) {
-    if (
-      Object(e) === e &&
-      (e instanceof DrizzleError || e instanceof PostgresError)
-    ) {
+    if (Object(e) === e && e instanceof DrizzleError) {
       throw new Error('Unable to update board');
     }
 
@@ -81,10 +74,7 @@ export const getBoardCreateRemainCount = async () => {
     const { count } = await updateUsedBoardCount();
     return count;
   } catch (e) {
-    if (
-      Object(e) === e &&
-      (e instanceof DrizzleError || e instanceof PostgresError)
-    ) {
+    if (Object(e) === e && e instanceof DrizzleError) {
       throw new Error('Unable to update board');
     }
 
