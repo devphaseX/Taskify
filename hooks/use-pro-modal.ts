@@ -7,7 +7,7 @@ type ProModalStore = {
 };
 
 export const useProModal = create<ProModalStore>((set) => ({
-  opened: true,
+  opened: false,
   onOpen: () => set({ opened: true }),
   onClose: () => set({ opened: false }),
 }));
