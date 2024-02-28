@@ -60,7 +60,7 @@ export const SideBarItem = ({
     {
       label: 'Billings',
       icon: <CreditCard className="h-4 w-4 mr-2" />,
-      href: `/organization/${organization.id}/billings`,
+      href: `/organization/${organization.id}/billing`,
     },
   ];
 
