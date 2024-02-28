@@ -54,7 +54,7 @@ const createBoardAction = serverAction(CreateBoardSchema, async (form) => {
     allowBoardCreate(),
   ]);
 
-  if (!isPro || !freeTierAllowed) {
+  if (!isPro && !freeTierAllowed) {
     throw new Error(
       'You have reach the limit for your free boards.Please upgrade to create more'
     );
