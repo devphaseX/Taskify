@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs';
 import { orgSubscription } from './schema';
 import { eq, getTableColumns } from 'drizzle-orm';
 
-const DAY_IN_MS = 84_000_000;
+const DAY_IN_MS = 86_400_000;
 
 export async function checkSubscriptionStatus() {
   const { orgId } = auth();

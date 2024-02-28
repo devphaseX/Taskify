@@ -10,6 +10,7 @@ import { eq, sql } from 'drizzle-orm';
 import { capitalize } from '@/lib/utils';
 import { createAuditLog } from './create-audit';
 import { allowBoardCreate, updateUsedBoardCount } from '@/lib/org-limit';
+import { checkSubscriptionStatus } from '@/lib/subscription';
 
 const CreateBoardSchema = object({
   title: string({ invalid_type_error: 'Title is required' }).min(3, {
@@ -48,22 +49,31 @@ const createBoardAction = serverAction(CreateBoardSchema, async (form) => {
     throw new Error('Board can only be created by organization');
   }
 
-  const boardCreatePermitted = await allowBoardCreate();
+  const [isPro, freeTierAllowed] = await Promise.all([
+    checkSubscriptionStatus(),
+    allowBoardCreate(),
+  ]);
 
-  if (!boardCreatePermitted) {
+  if (!isPro || !freeTierAllowed) {
     throw new Error(
       'You have reach the limit for your free boards.Please upgrade to create more'
     );
   }
+
   try {
     const newBoard = await db.transaction(async () => {
       const [newBoard] = await db
         .insert(board)
         .values({ title: form.title, orgId, image: form.image })
         .returning();
-      await updateUsedBoardCount();
+
+      if (!isPro) {
+        await updateUsedBoardCount();
+      }
+
       return newBoard;
     });
+
     revalidatePath(`/organization/${orgId}`);
 
     await createAuditLog({
@@ -140,6 +150,8 @@ const deleteBoardAction = serverAction(DeleteBoardSchema, async ({ id }) => {
     throw new Error('Board can only be created by organization');
   }
 
+  const isPro = await checkSubscriptionStatus();
+
   try {
     const deletedBoard = await db.transaction(async () => {
       const [deletedBoard] = await db
@@ -155,7 +167,10 @@ const deleteBoardAction = serverAction(DeleteBoardSchema, async ({ id }) => {
           entityTitle: deletedBoard.title,
         },
       });
-      await updateUsedBoardCount();
+
+      if (!isPro) {
+        await updateUsedBoardCount();
+      }
       return deletedBoard;
     });
 

@@ -10,18 +10,20 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getBoardCreateRemainCount } from '@/lib/org-limit';
 import { MAX_FREE_BOARD } from '@/constants/boards';
+import { checkSubscriptionStatus } from '@/lib/subscription';
 
 export const BoardList = async () => {
   const { orgId, userId } = auth();
   if (!userId) return redirect('/sign-in');
   if (!orgId) return redirect('/select-org');
 
-  const [boards, remainBoardCount] = await Promise.all([
+  const [boards, remainBoardCount, proSubscribed] = await Promise.all([
     db
       .select()
       .from(board)
       .where(sql`${board.orgId} = ${orgId}`),
     getBoardCreateRemainCount(),
+    checkSubscriptionStatus(),
   ]);
 
   return (
@@ -53,9 +55,11 @@ export const BoardList = async () => {
           flex-col gap-y-1 items-center justify-center hover:opacity-75 transition"
           >
             <p className="text-sm">Create new board</p>
-            <span className="text-xs">{`${
-              MAX_FREE_BOARD - remainBoardCount
-            } remaining`}</span>
+            <span className="text-xs">
+              {proSubscribed
+                ? 'Unlimited'
+                : `${MAX_FREE_BOARD - remainBoardCount} remaining`}
+            </span>
             <Hint
               sideOffset={40}
               description={`Free Workspaces can have up to 5 open boards.
